@@ -1,14 +1,28 @@
 import AsyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
+import { validateEmail } from "../utils/validators.js";
 
 //route POST /api/users/auth
+
 const authUser = AsyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Email and password are required");
+  }
+
+  if (!validateEmail(email)) {
+    res.status(400);
+    throw new Error("Invalid email format");
+  }
+
   const user = await User.findOne({ email });
 
-  if (user && (await user.matchPassword(password))) {
+  const isMatch = user && (await user.matchPassword(password));
+
+  if (isMatch) {
     generateToken(res, user._id);
     res.status(200).json({
       _id: user._id,
@@ -17,7 +31,7 @@ const authUser = AsyncHandler(async (req, res) => {
     });
   } else {
     res.status(401);
-    throw new Error("Invalid email or password");
+    throw new Error("Invalid credentials");
   }
 });
 
