@@ -4,7 +4,6 @@ const notFound = (req, res, next) => {
   next(error);
 };
 
-// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message;
@@ -14,10 +13,12 @@ const errorHandler = (err, req, res, next) => {
     message = "Resource Not found";
   }
 
-  res.status(statusCode).json({
-    message,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
-  });
+  if (!res.headersSent) {
+    res.status(statusCode).json({
+      message,
+      stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    });
+  }
 };
 
 export { notFound, errorHandler };
