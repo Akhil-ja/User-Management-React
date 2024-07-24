@@ -1,8 +1,8 @@
-import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import { LinkContainer } from "react-router-bootstrap";
+import { useSelector } from "react-redux";
 
 function Hero() {
+  const { userInfo } = useSelector((state) => state.auth);
   return (
     <div
       style={{
@@ -14,20 +14,11 @@ function Hero() {
       }}
     >
       <Card style={{ width: "18rem" }}>
-        <Card.Img variant="top" src="holder.js/100px180" />
         <Card.Body>
-          <Card.Title>Card Title</Card.Title>
+          <Card.Title>Welcome, {userInfo.name}!</Card.Title>
           <Card.Text>
-            Some quick example text to build on the card title.
+            to have you here. Explore our site and enjoy your experience!
           </Card.Text>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <LinkContainer to="/signin">
-              <Button variant="primary">Sign In</Button>
-            </LinkContainer>
-            <LinkContainer to="/register">
-              <Button variant="secondary">Sign Up</Button>
-            </LinkContainer>
-          </div>
         </Card.Body>
       </Card>
     </div>

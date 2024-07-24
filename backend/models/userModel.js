@@ -12,9 +12,15 @@ const userSchema = mongoose.Schema(
       required: true,
       unique: true,
     },
+    image: {
+      type: String,
+    },
     password: {
       type: String,
       required: true,
+    },
+    is_admin: {
+      type: Boolean,
     },
   },
   {

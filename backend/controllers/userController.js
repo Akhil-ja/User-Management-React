@@ -50,6 +50,7 @@ const registerUser = AsyncHandler(async (req, res) => {
     name,
     email,
     password,
+    is_admin: false,
   });
 
   if (user && (await user.matchPassword(password))) {
@@ -80,6 +81,7 @@ const getUserProfile = AsyncHandler(async (req, res) => {
     name: req.user.name,
     email: req.user.email,
   };
+  console.log(user);
   res.status(200).json(user);
 });
 
@@ -90,6 +92,11 @@ const updateUserProfile = AsyncHandler(async (req, res) => {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
 
+    if (req.file) {
+      const { filename } = req.file;
+      user.image = filename;
+    }
+
     if (req.body.password) {
       user.password = req.body.password;
     }
@@ -98,6 +105,7 @@ const updateUserProfile = AsyncHandler(async (req, res) => {
     res.status(200).json({
       _id: updatedUser._id,
       name: updatedUser.name,
+      image: updatedUser.image,
       email: updatedUser.email,
     });
   } else {

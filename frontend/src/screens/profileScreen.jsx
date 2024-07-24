@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Form, Button, Card } from "react-bootstrap";
+import { Form, Button, Card, Image } from "react-bootstrap";
 import FormContainer from "../components/FormContainer";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 import { setCredentials } from "../slices/authSlice";
-import { useUpdateUserMutation } from "../slices/usersApiSlice";
+import { useUpdateProfileUserMutation } from "../slices/usersApiSlice";
 
 const ProfileScreen = () => {
   const [name, setName] = useState("");
@@ -15,12 +15,13 @@ const ProfileScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [initialName, setInitialName] = useState("");
   const [initialEmail, setInitialEmail] = useState("");
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const dispatch = useDispatch();
-
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [updateProfile, { isLoading }] = useUpdateUserMutation();
+  const [updateProfile, { isLoading }] = useUpdateProfileUserMutation();
 
   useEffect(() => {
     if (userInfo) {
@@ -28,8 +29,19 @@ const ProfileScreen = () => {
       setEmail(userInfo.email);
       setInitialName(userInfo.name);
       setInitialEmail(userInfo.email);
+      setImage(userInfo.image || "");
     }
   }, [userInfo]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -39,27 +51,26 @@ const ProfileScreen = () => {
       return;
     }
 
-    const updatedFields = {};
-    if (name !== userInfo.name) updatedFields.name = name;
-    if (email !== userInfo.email) updatedFields.email = email;
-    if (password) updatedFields.password = password;
+    const formData = new FormData();
+    if (name !== userInfo.name) formData.append("name", name);
+    if (email !== userInfo.email) formData.append("email", email);
+    if (password) formData.append("password", password);
+    if (image) formData.append("image", image);
 
-    if (Object.keys(updatedFields).length === 0) {
+    if (formData.entries().length === 0) {
       toast.info("No changes to update");
       return;
     }
 
     try {
-      const res = await updateProfile({
-        _id: userInfo._id,
-        ...updatedFields,
-      }).unwrap();
-
+      const res = await updateProfile(formData).unwrap();
       dispatch(setCredentials({ ...res }));
       toast.success("Profile updated successfully");
       setIsEditing(false);
       setInitialName(name);
       setInitialEmail(email);
+      setImage(null);
+      setImagePreview(null);
     } catch (err) {
       if (err?.data?.message?.includes("E11000 duplicate key error")) {
         toast.error("Email already exists");
@@ -75,6 +86,8 @@ const ProfileScreen = () => {
     setEmail(initialEmail);
     setPassword("");
     setConfirmPassword("");
+    setImage(null);
+    setImagePreview(null);
     setIsEditing(false);
   };
 
@@ -84,6 +97,19 @@ const ProfileScreen = () => {
         <h1>Update Profile</h1>
         {!isEditing ? (
           <>
+            {userInfo.image && (
+              <Image
+                src={`http://localhost:5000/uploads/${userInfo.image}`}
+                alt="Profile"
+                roundedCircle
+                style={{
+                  width: "150px",
+                  height: "150px",
+                  objectFit: "cover",
+                  margin: "0 auto 20px",
+                }}
+              />
+            )}
             <p>
               <strong>Name:</strong> {name}
             </p>
@@ -94,6 +120,24 @@ const ProfileScreen = () => {
           </>
         ) : (
           <Form onSubmit={submitHandler}>
+            <Form.Group className="my-2">
+              <Form.Label>Profile Image</Form.Label>
+              <Form.Control type="file" onChange={handleImageChange} />
+              {imagePreview && (
+                <Image
+                  src={imagePreview}
+                  alt="Profile Preview"
+                  roundedCircle
+                  style={{
+                    width: "150px",
+                    height: "150px",
+                    objectFit: "cover",
+                    margin: "20px auto",
+                  }}
+                />
+              )}
+            </Form.Group>
+
             <Form.Group className="my-2" controlId="name">
               <Form.Label>Name</Form.Label>
               <Form.Control

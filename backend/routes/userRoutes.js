@@ -1,6 +1,7 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-const router = express.Router();
+import upload from "../middleware/uploadMiddleware.js";
+const userRoute = express.Router();
 import {
   authUser,
   logOutUser,
@@ -9,12 +10,12 @@ import {
   registerUser,
 } from "../controllers/userController.js";
 
-router.post("/", registerUser);
-router.post("/auth", authUser);
-router.post("/logout", logOutUser);
-router
+userRoute.post("/", registerUser);
+userRoute.post("/auth", authUser);
+userRoute
   .route("/profile")
   .get(protect, getUserProfile)
-  .put(protect, updateUserProfile);
+  .put(upload.single("image"), updateUserProfile);
+userRoute.post("/logout", logOutUser);
 
-export default router;
+export default userRoute;
