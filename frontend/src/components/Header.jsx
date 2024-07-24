@@ -1,4 +1,4 @@
-import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Container, Nav, Navbar } from "react-bootstrap";
 import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
 import { LinkContainer } from "react-router-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
@@ -11,14 +11,13 @@ function Header() {
   const [logoutApiCall] = useLogoutMutation();
 
   const dispatch = useDispatch();
-
   const navigate = useNavigate();
 
-  const logOuthandler = async () => {
+  const logOutHandler = async () => {
     try {
-      await logoutApiCall().unwrap();
+      await logoutApiCall(userInfo.isAdmin).unwrap();
       dispatch(logout());
-      navigate("/register");
+      navigate(userInfo.isAdmin ? "/admin" : "/login");
     } catch (err) {
       console.error("Failed to log out:", err);
     }
@@ -27,23 +26,20 @@ function Header() {
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
-        <LinkContainer to="/">
-          <Navbar.Brand href="#home">User Management</Navbar.Brand>
+        <LinkContainer to={userInfo && userInfo.isAdmin ? "/adminhome" : "/"}>
+          <Navbar.Brand>
+            {userInfo && userInfo.isAdmin
+              ? "Admin Dashboard"
+              : "User Management"}
+          </Navbar.Brand>
         </LinkContainer>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           <Nav>
             {userInfo ? (
-              <>
-                <NavDropdown title={userInfo.name} id="username">
-                  <LinkContainer to="/profile">
-                    <NavDropdown.Item>Profile</NavDropdown.Item>
-                  </LinkContainer>
-                  <NavDropdown.Item onClick={logOuthandler}>
-                    Logout
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </>
+              userInfo.isAdmin ? (
+                <Nav.Link onClick={logOutHandler}>Logout</Nav.Link>
+              ) : null
             ) : (
               <>
                 <LinkContainer to="/login">
@@ -57,6 +53,9 @@ function Header() {
                     <FaUserPlus className="me-1" />
                     Sign Up
                   </Nav.Link>
+                </LinkContainer>
+                <LinkContainer to="/admin">
+                  <Nav.Link className="ms-3">Admin Login</Nav.Link>
                 </LinkContainer>
               </>
             )}

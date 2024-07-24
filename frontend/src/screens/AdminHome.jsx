@@ -11,7 +11,15 @@ import {
 import { toast } from "react-toastify";
 import { logout } from "../slices/authSlice";
 import logo from "../assets/logo.jpg";
-import { Container, Card, Form, Button, Table } from "react-bootstrap";
+import {
+  Container,
+  Form,
+  Button,
+  Table,
+  Navbar,
+  Nav,
+  Modal,
+} from "react-bootstrap";
 
 const AdminHome = () => {
   const { data: users = [], isLoading, refetch } = useFetchUsersQuery();
@@ -70,10 +78,6 @@ const AdminHome = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedUser && formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
     try {
       if (selectedUser) {
         await updateUser({ id: selectedUser._id, data: formData }).unwrap();
@@ -82,11 +86,12 @@ const AdminHome = () => {
       } else {
         await createUser(formData).unwrap();
         toast.success("User created successfully");
-        setIsCreateMode(false);
       }
       refetch();
+      setFormData({ name: "", email: "", password: "", confirmPassword: "" });
     } catch (err) {
       toast.error(err?.data?.message || "An error occurred");
+      console.error("Error:", err);
     }
   };
 
@@ -106,35 +111,38 @@ const AdminHome = () => {
 
   return (
     <section
-      className="bg-neutral-200 dark:bg-neutral-700 d-flex align-items-center justify-content-center min-vh-100"
+      className="bg-light d-flex align-items-center justify-content-center min-vh-100"
       style={{
         backgroundImage: `url(${logo})`,
         backgroundSize: "cover",
       }}
     >
       <Container className="p-4">
-        <header className="d-flex justify-content-between align-items-center py-4 px-3 bg-dark bg-opacity-50 rounded mb-4">
-          <div className="d-flex align-items-center">
-            <p className="h4 text-light m-0"></p>
-          </div>
-          <div>
-            <Button
-              onClick={() => {
-                setIsCreateMode(true);
-                setSelectedUser(null);
-              }}
-              variant="secondary"
-              className="me-2"
-            >
-              Create User
-            </Button>
-            <Button onClick={handleLogout} variant="secondary">
-              Log Out
-            </Button>
-          </div>
-        </header>
+        <Navbar bg="dark" variant="dark" expand="lg" className="mb-4 rounded">
+          <Container>
+            <Navbar.Brand href="#">Admin Panel</Navbar.Brand>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+              <Nav className="ms-auto">
+                <Button
+                  onClick={() => {
+                    setIsCreateMode(true);
+                    setSelectedUser(null);
+                  }}
+                  variant="success"
+                  className="me-2"
+                >
+                  Create User
+                </Button>
+                <Button onClick={handleLogout} variant="danger">
+                  Log Out
+                </Button>
+              </Nav>
+            </Navbar.Collapse>
+          </Container>
+        </Navbar>
 
-        <h1 className="mb-4">Admin Home</h1>
+        <h1 className="text-center mb-4">Admin Home</h1>
         <Form.Group className="mb-4">
           <Form.Control
             type="text"
@@ -146,6 +154,8 @@ const AdminHome = () => {
 
         {isLoading ? (
           <p>Loading...</p>
+        ) : filteredUsers.length === 0 ? (
+          <p style={{ color: "white" }}>No users found</p>
         ) : (
           <Table striped bordered hover responsive>
             <thead>
@@ -184,69 +194,72 @@ const AdminHome = () => {
           </Table>
         )}
 
-        {(selectedUser || isCreateMode) && (
-          <Card className="mt-4">
-            <Card.Body>
-              <Card.Title>
-                {selectedUser ? "Edit User" : "Create User"}
-              </Card.Title>
-              <Form onSubmit={handleFormSubmit}>
-                <Form.Group className="mb-3" controlId="name">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleFormChange}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleFormChange}
-                  />
-                </Form.Group>
-                {!selectedUser && (
-                  <>
-                    <Form.Group className="mb-3" controlId="password">
-                      <Form.Label>Password</Form.Label>
-                      <Form.Control
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleFormChange}
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="confirmPassword">
-                      <Form.Label>Confirm Password</Form.Label>
-                      <Form.Control
-                        type="password"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleFormChange}
-                      />
-                    </Form.Group>
-                  </>
-                )}
-                <Button variant="success" type="submit">
-                  {selectedUser ? "Update User" : "Create User"}
-                </Button>
-                {selectedUser && (
-                  <Button
-                    variant="secondary"
-                    className="ms-2"
-                    onClick={() => setSelectedUser(null)}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </Form>
-            </Card.Body>
-          </Card>
-        )}
+        <Modal
+          show={selectedUser || isCreateMode}
+          onHide={() => setSelectedUser(null)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {selectedUser ? "Edit User" : "Create User"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleFormSubmit}>
+              <Form.Group className="mb-3" controlId="name">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="email">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleFormChange}
+                  required
+                />
+              </Form.Group>
+              {!selectedUser && (
+                <>
+                  <Form.Group className="mb-3" controlId="password">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleFormChange}
+                      required
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId="confirmPassword">
+                    <Form.Label>Confirm Password</Form.Label>
+                    <Form.Control
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleFormChange}
+                      required
+                    />
+                  </Form.Group>
+                </>
+              )}
+              <Button variant="success" type="submit">
+                {selectedUser ? "Update User" : "Create User"}
+              </Button>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setSelectedUser(null)}>
+              Cancel
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </section>
   );

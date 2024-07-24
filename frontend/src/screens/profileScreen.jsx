@@ -74,7 +74,7 @@ const ProfileScreen = () => {
     } catch (err) {
       if (err?.data?.message?.includes("E11000 duplicate key error")) {
         toast.error("Email already exists");
-        setEmail(initialEmail); // Reset email field to initial value
+        setEmail(initialEmail);
       } else {
         toast.error(err?.data?.message || err.error);
       }
