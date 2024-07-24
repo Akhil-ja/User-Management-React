@@ -6,6 +6,7 @@ import { validateEmail } from "../utils/validators.js";
 //route POST /api/users/auth
 
 const authUser = AsyncHandler(async (req, res) => {
+  console.log(req.body);
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -28,6 +29,7 @@ const authUser = AsyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.is_admin,
     });
   } else {
     res.status(401);
@@ -52,19 +54,19 @@ const registerUser = AsyncHandler(async (req, res) => {
     password,
     is_admin: false,
   });
-
+  console.log(user);
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.is_admin,
     });
   } else {
     res.status(401);
     throw new Error("Invalid email or password");
   }
-  res.status(200).json({ message: "Register User" });
 });
 
 const logOutUser = AsyncHandler(async (req, res) => {
@@ -76,6 +78,7 @@ const logOutUser = AsyncHandler(async (req, res) => {
 });
 
 const getUserProfile = AsyncHandler(async (req, res) => {
+  console.log("hi");
   const user = {
     _id: req.user._id,
     name: req.user.name,
@@ -86,7 +89,8 @@ const getUserProfile = AsyncHandler(async (req, res) => {
 });
 
 const updateUserProfile = AsyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  console.log("req>>>>>>>>>>...................", req.body);
+  const user = await User.findById(req.body.id);
 
   if (user) {
     user.name = req.body.name || user.name;

@@ -25,17 +25,19 @@ app.use(
 );
 app.use("/api/users", adminRoute, userRoutes);
 
+app.use(notFound);
+app.use(errorHandler);
+
 app.use(cookieParser());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(cors());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../frontend/public/uploads"))
+);
 app.get("/", (req, res) => res.send("server is ready"));
-
-app.use(notFound);
-app.use(errorHandler);
 
 app.listen(port, () => console.log(`Server Started on port ${port}`));

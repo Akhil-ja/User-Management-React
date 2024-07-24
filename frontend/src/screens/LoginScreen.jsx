@@ -29,9 +29,11 @@ const LoginScreen = () => {
     e.preventDefault();
     try {
       const res = await login({ email, password }).unwrap();
+      console.log(res);
       dispatch(setCredentials({ ...res }));
       navigate("/");
     } catch (err) {
+      console.log("catch>>>>>>>>>>>>>", err?.data?.message || err.error);
       toast.error(err?.data?.message || err.error);
     }
   };

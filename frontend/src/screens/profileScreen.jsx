@@ -7,6 +7,8 @@ import Loader from "../components/Loader";
 import { setCredentials } from "../slices/authSlice";
 import { useUpdateProfileUserMutation } from "../slices/usersApiSlice";
 
+// require("../../../uploads/");
+
 const ProfileScreen = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -56,6 +58,7 @@ const ProfileScreen = () => {
     if (email !== userInfo.email) formData.append("email", email);
     if (password) formData.append("password", password);
     if (image) formData.append("image", image);
+    formData.append("id", userInfo._id);
 
     if (formData.entries().length === 0) {
       toast.info("No changes to update");
@@ -99,7 +102,7 @@ const ProfileScreen = () => {
           <>
             {userInfo.image && (
               <Image
-                src={`http://localhost:5000/uploads/${userInfo.image}`}
+                src={`../../../uploads/${userInfo.image}`}
                 alt="Profile"
                 roundedCircle
                 style={{
@@ -122,6 +125,7 @@ const ProfileScreen = () => {
           <Form onSubmit={submitHandler}>
             <Form.Group className="my-2">
               <Form.Label>Profile Image</Form.Label>
+
               <Form.Control type="file" onChange={handleImageChange} />
               {imagePreview && (
                 <Image

@@ -1,9 +1,17 @@
 import multer from "multer";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// Resolve the current file path to ensure relative paths are accurate
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Define the path to the 'uploads' folder in the frontend public directory
+const uploadPath = path.resolve(__dirname, "../../frontend/public/uploads");
 
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, uploadPath);
   },
   filename(req, file, cb) {
     cb(

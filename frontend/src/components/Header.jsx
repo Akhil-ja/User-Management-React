@@ -1,4 +1,4 @@
-import { Container, Nav, Navbar } from "react-bootstrap";
+import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
 import { LinkContainer } from "react-router-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,6 +12,8 @@ function Header() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  console.log(userInfo);
 
   const logOutHandler = async () => {
     try {
@@ -37,9 +39,20 @@ function Header() {
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           <Nav>
             {userInfo ? (
-              userInfo.isAdmin ? (
-                <Nav.Link onClick={logOutHandler}>Logout</Nav.Link>
-              ) : null
+              <>
+                {userInfo.isAdmin ? (
+                  <Nav.Link onClick={logOutHandler}>Admin Logout</Nav.Link>
+                ) : (
+                  <NavDropdown title={userInfo.name} id="username">
+                    <LinkContainer to="/profile">
+                      <NavDropdown.Item>Profile</NavDropdown.Item>
+                    </LinkContainer>
+                    <NavDropdown.Item onClick={logOutHandler}>
+                      Logout
+                    </NavDropdown.Item>
+                  </NavDropdown>
+                )}
+              </>
             ) : (
               <>
                 <LinkContainer to="/login">
